@@ -1,0 +1,45 @@
+minus = "a" | "b" | "c" | "d" | "e" | "f" | "g" | "h" | "i" | "j" | "k" | "l" | "m" | "n" | "o" | "p" | "q" | "r" | "s" | "t" | "u" | "v" | "w" | "x" | "y" | "z" ;
+mayus = "A" | "B" | "C" | "D" | "E" | "F" | "G" | "H" | "I" | "J" | "K" | "L" | "M" | "N" | "O" | "P" | "Q" | "R" | "S" | "T" | "U" | "V" | "W" | "X" | "Y" | "Z" ;
+letra = minus | mayus ;
+digito = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" ;
+simbolo = "-" | "_" ;
+letra_especial = "á" | "é" | "í" | "ó" | "ú" | "ü" | "ñ" | "Á" | "É" | "Í" | "Ó" | "Ú" | "Ü" | "Ñ" ;
+
+coma = "," ;
+punto = ".";
+open_p = "(" ;
+close_p = ")" ;
+open_c = "[" ;
+close_c = "]" ;
+sp = " ";
+
+char = letra | letra_especial | sp | digito | simbolo ;
+string = '"', { char }, '"' ;
+
+operador_ar_proyeccion = "π" ;
+operador_ar_seleccion = "σ" ;
+operador_ar_unario = operador_ar_proyeccion | operador_ar_seleccion ;
+operador_ar_binario = "∩" | "∪" | "−" | "χ" | "⋈" ;
+operador_ar = operador_ar_unario | operador_ar_binario ;
+
+operador_b = "<" | ">" | "=" | "≠" | "≤" | "≥" ;
+operador_bb_unario = "~" ;
+operador_bb_binario = "∨" | "∧" ;
+operador_bb = operador_bb_unario | operador_bb_binario ;
+
+identificador = minus | mayus , [{ minus | mayus | digito | "_"}] ;
+identificador_atributo = identificador , [ punto , identificador ] ;
+
+expresion_bs = identificador_atributo , {sp}, operador_b, {sp}, identificador_atributo | identificador_atributo , {sp}, operador_b, {sp}, string | string , {sp}, operador_b, {sp}, identificador_atributo ;
+expresion_b = expresion_bs | open_p , {sp} , expresion_b , {sp} , close_p
+
+expresion_bbs = expresion_b | operador_bb_unario, {sp}, expresion_bb | expresion_bb, {sp}, operador_bb_binario, {sp}, expresion_bb
+expresion_bb = expresion_bbs | open_p , {sp}, expresion_bb , {sp} , close_p
+
+lista_atributos = open_c , {sp} , identificador , { coma , {sp} , identificador } , {sp} , close_c ;
+
+consulta = identificador
+        | open_p , consulta , close_p
+        | operador_ar_proyeccion, {sp}, lista_atributos, {sp}, consulta
+        | operador_ar_seleccion, {sp}, expresion_bb, {sp}, consulta
+        | consulta, {sp}, operador_ar_binario, {sp}, consulta
