@@ -28,6 +28,10 @@ cargarTabla (t:ts) nombre
 esColumna :: String -> Columna -> Bool
 esColumna s c = s == c || s == (nombreColumna c)
 
+columna :: Columna -> [Columna] -> Columna
+columna col [] = error ("No existe la columna '"++col++"'")
+columna col (c:cs) = if nombreColumna col == nombreColumna c then c else columna col cs
+
 columnaTupla :: Columna -> [Columna] -> Tupla -> Atributo
 columnaTupla col []  _ = error ("No existe la columna '"++col++"'")
 columnaTupla col (c:cs) (f:fs) = if esColumna col c then f else columnaTupla col cs fs
@@ -50,7 +54,7 @@ ejecutarConsulta bd q =
                 fp tup = resolverPredicado (fc tup) (fv tup) p
             in
                 Tau (Tabla (columnas t) (filter (\tup -> fp tup) (tuplas t)))
-        proyeccion fs (Tau t) = Tau $ Tabla (filter (\c -> any (flip esColumna c) fs) (columnas t)) (nub $ (\tup -> columnasTupla fs (columnas t) tup) <$> (tuplas t))
+        proyeccion fs (Tau t) = Tau $ Tabla ((\c -> columna c (columnas t)) <$> fs) (nub $ (\tup -> columnasTupla fs (columnas t) tup) <$> (tuplas t))
 
         nuevoNombreTabla t1 t2 = nombreTabla t1 ++ "_" ++ nombreTabla t2
 
