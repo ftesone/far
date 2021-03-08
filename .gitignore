@@ -1,4 +1,4 @@
 *.hi
 *.o
 far
-/csv
+*.csv
