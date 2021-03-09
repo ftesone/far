@@ -11,6 +11,7 @@ nombresTablas :: Consulta -> [String]
 nombresTablas (Taux t) = [t]
 nombresTablas (Sigma _ t) = nombresTablas t
 nombresTablas (Pi _ t) = nombresTablas t
+nombresTablas (Rho _ t) = nombresTablas t
 nombresTablas (X t1 t2) = nombresTablas t1 ++ nombresTablas t2
 nombresTablas (NX t1 t2) = nombresTablas t1 ++ nombresTablas t2
 nombresTablas (U t1 t2) = nombresTablas t1 ++ nombresTablas t2

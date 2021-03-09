@@ -50,6 +50,7 @@ El programa debe ejecutarse proveyendo dos parámetros:
     - se utilizan los siguientes símbolos para las operaciones:
         - `σ` para la operación de selección
         - `π` para la operación de proyección
+        - `⍴` para la operación de renombre
         - `✕` para la operación de producto cartesiano
         - `⋈` para la operación de producto natural
         - `∪` para la operación de unión
@@ -58,7 +59,7 @@ El programa debe ejecutarse proveyendo dos parámetros:
 
 ### 3.2. Operaciones
 
-Las **operaciones unarias** se definen escribiendo `símbolo [parámetro] fórmula`, donde `símbolo` es el operador (`σ` o `π`), `parámetro` (nótese que se delimita con corchetes) representa una fórmula booleana para la selección o una lista de atributos para la proyección, y `fórmula` una fórmula de AR.
+Las **operaciones unarias** se definen escribiendo `símbolo [parámetro] fórmula`, donde `símbolo` es el operador (`σ`, `π` o `⍴`), `parámetro` (nótese que se delimita con corchetes) representa una fórmula booleana para la selección, una lista de atributos para la proyección, y un nuevo nombre para la relación, y `fórmula` una fórmula de AR.
 
 Las fórmulas booleanas se definen comparando el valor de un atributo con otro, o el valor de un atributo con un valor constante, utilizando los operadores `=` (igual), `≠` (distinto), `<` (menor), `≤` (menor o igual), `>` (mayor), `≥` (mayor o igual). Es posible definir fórmulas compuestas con los operadores `~` (negación), `∨` (disyunción), `∧` (conjunción).
 
@@ -152,8 +153,9 @@ legajo;apellido_nombre;email
 ```ebnf
 formula = identificador
         | open_p , formula , close_p
-        | operador_ar_proyeccion, {sp}, lista_atributos, {sp}, formula
         | operador_ar_seleccion, {sp}, expresion_bb, {sp}, formula
+        | operador_ar_proyeccion, {sp}, lista_atributos, {sp}, formula
+        | operador_ar_renombre, {sp}, open_c, {sp}, identificador, {sp}, close_c, {sp}, formula
         | formula, {sp}, operador_ar_binario, {sp}, formula
 
 lista_atributos = open_c , {sp} , identificador , { coma , {sp} , identificador } , {sp} , close_c ;
@@ -174,9 +176,10 @@ operador_b = "<" | ">" | "=" | "≠" | "≤" | "≥" ;
 
 operador_ar = operador_ar_unario | operador_ar_binario ;
 operador_ar_binario = "∩" | "∪" | "−" | "χ" | "⋈" ;
-operador_ar_unario = operador_ar_proyeccion | operador_ar_seleccion ;
+operador_ar_unario = operador_ar_seleccion | operador_ar_proyeccion | operador_ar_renombre ;
 operador_ar_seleccion = "σ" ;
 operador_ar_proyeccion = "π" ;
+operador_ar_renombre = "⍴" ;
 
 string = '"', { char }, '"' ;
 char = letra | letra_especial | sp | digito | simbolo ;

@@ -56,13 +56,15 @@ ejecutarConsulta bd q =
                 Tau (Tabla (columnas t) (filter (\tup -> fp tup) (tuplas t)))
         proyeccion fs (Tau t) = Tau $ Tabla ((\c -> columna c (columnas t)) <$> fs) (nub $ (\tup -> columnasTupla fs (columnas t) tup) <$> (tuplas t))
 
+        renombre n (Tau t) = Tau $ Tabla ((\c -> n ++ (dropWhile (/='.') c)) <$> (columnas t)) (tuplas t)
+
         nuevoNombreTabla t1 t2 = nombreTabla t1 ++ "_" ++ nombreTabla t2
 
         prodCartesiano (Tau t1) (Tau t2) = Tau $ Tabla ((columnas t1) ++ (columnas t2)) (liftM2 (++) (tuplas t1) (tuplas t2))
 
         prodNatural (Tau t1) (Tau t2) = seleccion (foldr1 And [ Simple (Col Eq i j) | i <- columnas t1, j <- columnas t2, nombreColumna i == nombreColumna j ]) (prodCartesiano (Tau t1) (Tau t2))
 
-        dominiosCompatibles t1 t2 = length (columnas t1) == length (columnas t2) && length (columnas t1) == length [ i | i <- (columnas t1) , j <- (columnas t2), (nombreColumna i) == (nombreColumna j) ]
+        dominiosCompatibles t1 t2 = length (columnas t1) == length [ i | i <- (columnas t1) , j <- (columnas t2), (nombreColumna i) == (nombreColumna j) ]
 
         union (Tau t1) (Tau t2) | dominiosCompatibles t1 t2 = Tau $ Tabla (nombreColumna <$> columnas t1) (nub $ (tuplas t1) ++ (tuplas t2))
                                 | otherwise = error "Unión: dominios distintos"
@@ -72,7 +74,7 @@ ejecutarConsulta bd q =
 
         diferencia (Tau t1) (Tau t2) | dominiosCompatibles t1 t2 = Tau $ Tabla (nombreColumna <$> columnas t1) $ filter (not . flip elem (tuplas t2)) $ tuplas t1
 
-    in foldConsulta (tabla) (Tau) (seleccion) (proyeccion) (prodCartesiano) (prodNatural) (union) (interseccion) (diferencia) q
+    in foldConsulta (tabla) (Tau) (seleccion) (proyeccion) (renombre) (prodCartesiano) (prodNatural) (union) (interseccion) (diferencia) q
 
 
 
