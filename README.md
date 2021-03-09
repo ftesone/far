@@ -46,7 +46,7 @@ El programa debe ejecutarse proveyendo dos parámetros:
     - la codificación utilizada debe ser UTF-8
     - los saltos de línea utilizados deben ser Unix (`LF`)
  1. String cuyo valor representa la fórmula de álgebra relacional (AR) a resolver, donde:
-    - se debe definir al menos una tabla a utilizar, considerando que los nombres de las tablas se corresponden con los nombres de los archivos sin la extensión (es decir, si dentro del directorio que se referencia como primer parámetro existe un archivo `prueba.csv`, entonces en las fórmulas de AR puede utilizarse la tabla `prueba`).
+    - se debe definir al menos una relación a utilizar, considerando que los nombres de las relaciónes se corresponden con los nombres de los archivos sin la extensión (es decir, si dentro del directorio que se referencia como primer parámetro existe un archivo con nombre `prueba.csv`, entonces en las fórmulas de AR puede utilizarse la relación `prueba`).
     - se utilizan los siguientes símbolos para las operaciones:
         - `σ` para la operación de selección
         - `π` para la operación de proyección
@@ -64,7 +64,7 @@ Las fórmulas booleanas se definen comparando el valor de un atributo con otro, 
 
 Las **operaciones binarias** se definen escribiendo `fórmula símbolo fórmula`, donde `símbolo` es el operador (`✕`, `⋈`, `∪`, `∩` o `−`), y `fórmula` una fórmula de AR.
 
-La fórmula AR mínima es el nombre de una tabla.
+La fórmula AR mínima es el nombre de una relación.
 
 La precedencia de las operaciones está definida de la siguiente forma:
  - las operaciones unarias tienen mayor precedencia que las binarias;
@@ -142,6 +142,10 @@ Con los datos de ejemplo, la salida de la primera consulta es:
 legajo;apellido_nombre;email
 85156/5;Rognoni, Gabriel;grognoni@mail.com
 ```
+
+**Nota:** los datos de personas utilizados en el ejemplo corresponden a:
+ - legajos generados aleatoriamente
+ - nombres y apellidos seleccionados aleatoriamente a partir de un conjunto arbtrario
 
 ## 5. Sintaxis EBNF
 
