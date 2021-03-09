@@ -1,5 +1,5 @@
 module BOp
-    (BOp(..), resolverBOp)
+    (BOp(..), reversoBOp, resolverBOp)
 where
 
 data BOp = Eq | Ne | Gt | Ge | Lt | Le
@@ -20,6 +20,14 @@ instance Read BOp where
         '≥' -> [(Ge, tail str)]
         '<' -> [(Lt, tail str)]
         '≤' -> [(Le, tail str)]
+
+reversoBOp :: BOp -> BOp
+reversoBOp Eq = Eq
+reversoBOp Ne = Ne
+reversoBOp Gt = Lt
+reversoBOp Ge = Le
+reversoBOp Lt = Gt
+reversoBOp Le = Ge
 
 resolverBOp :: Ord a => BOp -> a -> a -> Bool
 resolverBOp Eq = (==)

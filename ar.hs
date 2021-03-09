@@ -1,5 +1,5 @@
 module AR
-    (crearRelacion, ejecutar, ejecutarConsulta, RelacionBaseBD (..))
+    (crearRelacionBD, ejecutar, ejecutarConsulta, RelacionBaseBD (..))
 where
 
 import BOp
@@ -79,8 +79,8 @@ ejecutarConsulta bd q =
 
 
 -- funciones para crear la BD
-crearRelacion :: String -> [String] -> [[String]] -> RelacionBaseBD
-crearRelacion n c t = RelacionBD n (Relacion c t)
+crearRelacionBD :: String -> [String] -> [[String]] -> RelacionBaseBD
+crearRelacionBD n a t = RelacionBD n $ crearRelacion ((\s -> n++"."++s) <$> a) t
 
 
 -- función para ejecutar consultas sobre BD

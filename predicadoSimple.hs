@@ -20,7 +20,7 @@ instance Read PredicadoSimple where
             c2 = trim $ (tail . dropWhile (not . flip elem "=≠>≥<≤")) str
             bop = read (filter (flip elem "=≠>≥<≤") str)
         in if elem '"' c1
-            then [(Val bop c2 (filter (/='\"') c1), "")]
+            then [(Val (reversoBOp bop) c2 (filter (/='\"') c1), "")]
             else if elem '"' c2
                 then [(Val bop c1 (filter (/='\"') c2), "")]
                 else [(Col bop c1 c2, "")]

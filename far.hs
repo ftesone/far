@@ -25,6 +25,14 @@ crearEstructurasRelacion [] _ = []
 crearEstructurasRelacion _ [] = []
 crearEstructurasRelacion (n:ns) (t:ts) = (n,t):(crearEstructurasRelacion ns ts)
 
+crearRelacionDeCsv :: String -> String -> RelacionBaseBD
+crearRelacionDeCsv n csvStr =
+    let
+        csvLines = lines csvStr
+        attrLine = head csvLines
+        tupLines = tail csvLines
+    in crearRelacionBD n (csvLineToList attrLine) (csvLineToList <$> tupLines)
+
 
 
 main = do
@@ -32,10 +40,15 @@ main = do
     if length args /= 2
         then error "El primer parámetro debe ser un directorio, el segundo la consulta"
         else do
-            let (dir,consulta) = (head args, crearConsulta $ head $ tail args) -- (String, Consulta)
-            let tablas = nombresRelaciones consulta -- ([String])
-            let archivos = (\fn -> dir ++ "/" ++ fn ++ ".csv") <$> tablas -- [(String, String)]
+            -- obtener argumentos, consulta y relaciones
+            let dir = args !! 0
+            let consulta = crearConsulta $ args !! 1
+            let relaciones = nub $ nombresRelaciones consulta
+            -- leer archivos a utilizar
+            let archivos = (\fn -> dir ++ "/" ++ fn ++ ".csv") <$> relaciones
             tups <- mapM (\arch -> readFile arch) archivos
-            let datosRelaciones = crearEstructurasRelacion tablas tups
-            let bd = (\dt -> crearRelacion (fst dt) ((\c -> (fst dt)++"."++c) <$> (csvLineToList $ head $ lines $ snd dt)) (csvLineToList <$> (tail $ lines $ snd dt))) <$> datosRelaciones
+            -- crear relaciones y definir la BD
+            let datosRelaciones = crearEstructurasRelacion relaciones tups
+            let bd = (\dt -> crearRelacionDeCsv (fst dt) (snd dt)) <$> datosRelaciones
+            -- ejecutar y mostrar la consulta
             putStr $ show $ ejecutarConsulta bd consulta

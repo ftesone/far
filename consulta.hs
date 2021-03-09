@@ -58,10 +58,11 @@ instance Read Consulta where
 nombreAtributo :: Atributo -> String
 nombreAtributo c = if elem '.' c then tail $ dropWhile (/='.') c else c
 
-
-
 crearConsulta :: String -> Consulta
 crearConsulta s = read s :: Consulta
+
+crearRelacion :: [String] -> [[String]] -> RelacionBase
+crearRelacion a t = Relacion a t
 
 
 
