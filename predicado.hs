@@ -7,7 +7,7 @@ import PredicadoSimple
 import ExprBuilder
 import Utils
 
-type Columna = String
+type Atributo = String
 
 data Predicado = Simple PredicadoSimple | Not Predicado | Or Predicado Predicado | And Predicado Predicado
 
@@ -38,5 +38,5 @@ foldPredicado fp fn fo fa (Not p) = fn (foldPredicado fp fn fo fa p)
 foldPredicado fp fn fo fa (Or p1 p2) = fo (foldPredicado fp fn fo fa p1) (foldPredicado fp fn fo fa p2)
 foldPredicado fp fn fo fa (And p1 p2) = fa (foldPredicado fp fn fo fa p1) (foldPredicado fp fn fo fa p2)
 
-resolverPredicado :: (BOp -> Columna -> Columna -> Bool) -> (BOp -> Columna -> String -> Bool) -> Predicado -> Bool
+resolverPredicado :: (BOp -> Atributo -> Atributo -> Bool) -> (BOp -> Atributo -> String -> Bool) -> Predicado -> Bool
 resolverPredicado fc fv = foldPredicado (foldPredicadoSimple fc fv) (not) (||) (&&)

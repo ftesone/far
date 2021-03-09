@@ -7,23 +7,23 @@ import AR
 
 
 
-nombresTablas :: Consulta -> [String]
-nombresTablas (Taux t) = [t]
-nombresTablas (Sigma _ t) = nombresTablas t
-nombresTablas (Pi _ t) = nombresTablas t
-nombresTablas (Rho _ t) = nombresTablas t
-nombresTablas (X t1 t2) = nombresTablas t1 ++ nombresTablas t2
-nombresTablas (NX t1 t2) = nombresTablas t1 ++ nombresTablas t2
-nombresTablas (U t1 t2) = nombresTablas t1 ++ nombresTablas t2
-nombresTablas (I t1 t2) = nombresTablas t1 ++ nombresTablas t2
-nombresTablas (D t1 t2) = nombresTablas t1 ++ nombresTablas t2
+nombresRelaciones :: Consulta -> [String]
+nombresRelaciones (Taux r) = [r]
+nombresRelaciones (Sigma _ r) = nombresRelaciones r
+nombresRelaciones (Pi _ r) = nombresRelaciones r
+nombresRelaciones (Rho _ r) = nombresRelaciones r
+nombresRelaciones (X r1 r2) = nombresRelaciones r1 ++ nombresRelaciones r2
+nombresRelaciones (NX r1 r2) = nombresRelaciones r1 ++ nombresRelaciones r2
+nombresRelaciones (U r1 r2) = nombresRelaciones r1 ++ nombresRelaciones r2
+nombresRelaciones (I r1 r2) = nombresRelaciones r1 ++ nombresRelaciones r2
+nombresRelaciones (D r1 r2) = nombresRelaciones r1 ++ nombresRelaciones r2
 
 
 
-crearEstructurasTabla :: [String] -> [String] -> [(String,String)]
-crearEstructurasTabla [] _ = []
-crearEstructurasTabla _ [] = []
-crearEstructurasTabla (n:ns) (t:ts) = (n,t):(crearEstructurasTabla ns ts)
+crearEstructurasRelacion :: [String] -> [String] -> [(String,String)]
+crearEstructurasRelacion [] _ = []
+crearEstructurasRelacion _ [] = []
+crearEstructurasRelacion (n:ns) (t:ts) = (n,t):(crearEstructurasRelacion ns ts)
 
 
 
@@ -33,9 +33,9 @@ main = do
         then error "El primer parámetro debe ser un directorio, el segundo la consulta"
         else do
             let (dir,consulta) = (head args, crearConsulta $ head $ tail args) -- (String, Consulta)
-            let tablas = nombresTablas consulta -- ([String])
+            let tablas = nombresRelaciones consulta -- ([String])
             let archivos = (\fn -> dir ++ "/" ++ fn ++ ".csv") <$> tablas -- [(String, String)]
             tups <- mapM (\arch -> readFile arch) archivos
-            let datosTablas = crearEstructurasTabla tablas tups
-            let bd = (\dt -> crearTabla (fst dt) ((\c -> (fst dt)++"."++c) <$> (csvLineToList $ head $ lines $ snd dt)) (csvLineToList <$> (tail $ lines $ snd dt))) <$> datosTablas
+            let datosRelaciones = crearEstructurasRelacion tablas tups
+            let bd = (\dt -> crearRelacion (fst dt) ((\c -> (fst dt)++"."++c) <$> (csvLineToList $ head $ lines $ snd dt)) (csvLineToList <$> (tail $ lines $ snd dt))) <$> datosRelaciones
             putStr $ show $ ejecutarConsulta bd consulta

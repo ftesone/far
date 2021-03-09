@@ -4,16 +4,16 @@ import Predicado
 import ExprBuilder
 import Utils
 
+type Elemento = String
+type Tupla = [Elemento]
 type Atributo = String
-type Tupla = [Atributo]
-type Columna = String
-data TablaBase = Tabla { columnas :: [Columna], tuplas :: [Tupla] }
+data RelacionBase = Relacion { atributos :: [Atributo], tuplas :: [Tupla] }
 
 data Consulta
     = Taux String
-    | Tau TablaBase
+    | Tau RelacionBase
     | Sigma Predicado Consulta
-    | Pi [Columna] Consulta
+    | Pi [Atributo] Consulta
     | Rho String Consulta
     | X Consulta Consulta
     | NX Consulta Consulta
@@ -23,7 +23,7 @@ data Consulta
 
 instance Show Consulta where
     show (Taux tb)   = tb
-    show (Tau tb)    = (flistToCsvLine (nombreColumna) $ columnas tb) ++ "\n" ++ (unlines $ listToCsvLine <$> tuplas tb)
+    show (Tau tb)    = (flistToCsvLine (nombreAtributo) $ atributos tb) ++ "\n" ++ (unlines $ listToCsvLine <$> tuplas tb)
     show (Sigma p q) = "σ [" ++ (show p) ++ "] " ++ (show q)
     show (Pi cs q)   = "π [" ++ (init $ foldr ((++).(++",")) "" cs) ++ "] " ++ (show q)
     show (Rho t q)   = "⍴ [" ++ t ++ "] " ++ (show q)
@@ -55,8 +55,8 @@ instance Read Consulta where
 
 
 
-nombreColumna :: Columna -> String
-nombreColumna c = if elem '.' c then tail $ dropWhile (/='.') c else c
+nombreAtributo :: Atributo -> String
+nombreAtributo c = if elem '.' c then tail $ dropWhile (/='.') c else c
 
 
 
@@ -65,7 +65,7 @@ crearConsulta s = read s :: Consulta
 
 
 
-foldConsulta :: (String -> Consulta) -> (TablaBase -> Consulta) -> (Predicado -> Consulta -> Consulta) -> ([Columna] -> Consulta -> Consulta) -> (String -> Consulta -> Consulta) -> (Consulta -> Consulta -> Consulta) -> (Consulta -> Consulta -> Consulta) -> (Consulta -> Consulta -> Consulta) -> (Consulta -> Consulta -> Consulta) -> (Consulta -> Consulta -> Consulta) -> Consulta -> Consulta
+foldConsulta :: (String -> Consulta) -> (RelacionBase -> Consulta) -> (Predicado -> Consulta -> Consulta) -> ([Atributo] -> Consulta -> Consulta) -> (String -> Consulta -> Consulta) -> (Consulta -> Consulta -> Consulta) -> (Consulta -> Consulta -> Consulta) -> (Consulta -> Consulta -> Consulta) -> (Consulta -> Consulta -> Consulta) -> (Consulta -> Consulta -> Consulta) -> Consulta -> Consulta
 foldConsulta fa ft fs fp fr fx fn fu fi fd (Taux t)    = fa t
 foldConsulta fa ft fs fp fr fx fn fu fi fd (Tau t)     = ft t
 foldConsulta fa ft fs fp fr fx fn fu fi fd (Sigma p q) = fs p (foldConsulta fa ft fs fp fr fx fn fu fi fd q)

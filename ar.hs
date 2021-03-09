@@ -1,5 +1,5 @@
 module AR
-    (crearTabla, ejecutar, ejecutarConsulta, TablaBaseBD (..))
+    (crearRelacion, ejecutar, ejecutarConsulta, RelacionBaseBD (..))
 where
 
 import BOp
@@ -13,74 +13,74 @@ import Control.Monad (liftM2)
 
 
 
-data TablaBaseBD = TablaBD { nombreTabla :: String, tabla :: TablaBase }
-type BD = [TablaBaseBD]
+data RelacionBaseBD = RelacionBD { nombreRelacion :: String, relacion :: RelacionBase }
+type BD = [RelacionBaseBD]
 
 
 
 -- funciones para ejecutar consultas
-cargarTabla :: BD -> String -> TablaBase
-cargarTabla [] nombre = error ("No existe la tabla "++nombre)
-cargarTabla (t:ts) nombre
-    | nombreTabla t == nombre = tabla t
-    | otherwise = cargarTabla ts nombre
+cargarRelacion :: BD -> String -> RelacionBase
+cargarRelacion [] nombre = error ("No existe la relación "++nombre)
+cargarRelacion (r:rs) nombre
+    | nombreRelacion r == nombre = relacion r
+    | otherwise = cargarRelacion rs nombre
 
-esColumna :: String -> Columna -> Bool
-esColumna s c = s == c || s == (nombreColumna c)
+esAtributo :: String -> Atributo -> Bool
+esAtributo s a = s == a || s == (nombreAtributo a)
 
-columna :: Columna -> [Columna] -> Columna
-columna col [] = error ("No existe la columna '"++col++"'")
-columna col (c:cs) = if nombreColumna col == nombreColumna c then c else columna col cs
+atributo :: Atributo -> [Atributo] -> Atributo
+atributo att [] = error ("No existe el atributo '"++att++"'")
+atributo att (a:as) = if nombreAtributo att == nombreAtributo a then a else atributo att as
 
-columnaTupla :: Columna -> [Columna] -> Tupla -> Atributo
-columnaTupla col []  _ = error ("No existe la columna '"++col++"'")
-columnaTupla col (c:cs) (f:fs) = if esColumna col c then f else columnaTupla col cs fs
+atributoTupla :: Atributo -> [Atributo] -> Tupla -> Atributo
+atributoTupla att []  _ = error ("No existe el atributo '"++att++"'")
+atributoTupla att (a:as) (f:fs) = if esAtributo att a then f else atributoTupla att as fs
 
-columnasTupla :: [Columna] -> [Columna] -> Tupla -> [Atributo]
-columnasTupla [] _ _ = []
-columnasTupla (c:cs) cols tups = (columnaTupla c cols tups):(columnasTupla cs cols tups)
+atributosTupla :: [Atributo] -> [Atributo] -> Tupla -> [Atributo]
+atributosTupla [] _ _ = []
+atributosTupla (a:as) atts tups = (atributoTupla a atts tups):(atributosTupla as atts tups)
 
 
 
 ejecutarConsulta :: BD -> Consulta -> Consulta
 ejecutarConsulta bd q =
     let
-        tabla t = Tau $ cargarTabla bd t
+        relacion r = Tau $ cargarRelacion bd r
 
-        seleccion p (Tau t) =
+        seleccion p (Tau r) =
             let
-                fc tup = \bop c1 c2 -> resolverBOp bop (columnaTupla c1 (columnas t) tup) (columnaTupla c2 (columnas t) tup)
-                fv tup = \bop c v -> resolverBOp bop (columnaTupla c (columnas t) tup) v
+                fc tup = \bop c1 c2 -> resolverBOp bop (atributoTupla c1 (atributos r) tup) (atributoTupla c2 (atributos r) tup)
+                fv tup = \bop c v -> resolverBOp bop (atributoTupla c (atributos r) tup) v
                 fp tup = resolverPredicado (fc tup) (fv tup) p
             in
-                Tau (Tabla (columnas t) (filter (\tup -> fp tup) (tuplas t)))
-        proyeccion fs (Tau t) = Tau $ Tabla ((\c -> columna c (columnas t)) <$> fs) (nub $ (\tup -> columnasTupla fs (columnas t) tup) <$> (tuplas t))
+                Tau (Relacion (atributos r) (filter (\tup -> fp tup) (tuplas r)))
+        proyeccion fs (Tau r) = Tau $ Relacion ((\c -> atributo c (atributos r)) <$> fs) (nub $ (\tup -> atributosTupla fs (atributos r) tup) <$> (tuplas r))
 
-        renombre n (Tau t) = Tau $ Tabla ((\c -> n ++ (dropWhile (/='.') c)) <$> (columnas t)) (tuplas t)
+        renombre n (Tau r) = Tau $ Relacion ((\c -> n ++ (dropWhile (/='.') c)) <$> (atributos r)) (tuplas r)
 
-        nuevoNombreTabla t1 t2 = nombreTabla t1 ++ "_" ++ nombreTabla t2
+        nuevoNombreRelacion r1 r2 = nombreRelacion r1 ++ "_" ++ nombreRelacion r2
 
-        prodCartesiano (Tau t1) (Tau t2) = Tau $ Tabla ((columnas t1) ++ (columnas t2)) (liftM2 (++) (tuplas t1) (tuplas t2))
+        prodCartesiano (Tau r1) (Tau r2) = Tau $ Relacion ((atributos r1) ++ (atributos r2)) (liftM2 (++) (tuplas r1) (tuplas r2))
 
-        prodNatural (Tau t1) (Tau t2) = seleccion (foldr1 And [ Simple (Col Eq i j) | i <- columnas t1, j <- columnas t2, nombreColumna i == nombreColumna j ]) (prodCartesiano (Tau t1) (Tau t2))
+        prodNatural (Tau r1) (Tau r2) = seleccion (foldr1 And [ Simple (Col Eq i j) | i <- atributos r1, j <- atributos r2, nombreAtributo i == nombreAtributo j ]) (prodCartesiano (Tau r1) (Tau r2))
 
-        dominiosCompatibles t1 t2 = length (columnas t1) == length [ i | i <- (columnas t1) , j <- (columnas t2), (nombreColumna i) == (nombreColumna j) ]
+        dominiosCompatibles r1 r2 = length (atributos r1) == length [ i | i <- (atributos r1) , j <- (atributos r2), (nombreAtributo i) == (nombreAtributo j) ]
 
-        union (Tau t1) (Tau t2) | dominiosCompatibles t1 t2 = Tau $ Tabla (nombreColumna <$> columnas t1) (nub $ (tuplas t1) ++ (tuplas t2))
+        union (Tau r1) (Tau r2) | dominiosCompatibles r1 r2 = Tau $ Relacion (nombreAtributo <$> atributos r1) (nub $ (tuplas r1) ++ (tuplas r2))
                                 | otherwise = error "Unión: dominios distintos"
 
-        interseccion (Tau t1) (Tau t2) | dominiosCompatibles t1 t2 = Tau $ Tabla (nombreColumna <$> columnas t1) [ i | i <- tuplas t1, j <- tuplas t2, i == j]
+        interseccion (Tau r1) (Tau r2) | dominiosCompatibles r1 r2 = Tau $ Relacion (nombreAtributo <$> atributos r1) [ i | i <- tuplas r1, j <- tuplas r2, i == j]
                                        | otherwise = error "Intersección: dominios distintos"
 
-        diferencia (Tau t1) (Tau t2) | dominiosCompatibles t1 t2 = Tau $ Tabla (nombreColumna <$> columnas t1) $ filter (not . flip elem (tuplas t2)) $ tuplas t1
+        diferencia (Tau r1) (Tau r2) | dominiosCompatibles r1 r2 = Tau $ Relacion (nombreAtributo <$> atributos r1) $ filter (not . flip elem (tuplas r2)) $ tuplas r1
 
-    in foldConsulta (tabla) (Tau) (seleccion) (proyeccion) (renombre) (prodCartesiano) (prodNatural) (union) (interseccion) (diferencia) q
+    in foldConsulta (relacion) (Tau) (seleccion) (proyeccion) (renombre) (prodCartesiano) (prodNatural) (union) (interseccion) (diferencia) q
 
 
 
 -- funciones para crear la BD
-crearTabla :: String -> [String] -> [[String]] -> TablaBaseBD
-crearTabla n c t = TablaBD n (Tabla c t)
+crearRelacion :: String -> [String] -> [[String]] -> RelacionBaseBD
+crearRelacion n c t = RelacionBD n (Relacion c t)
 
 
 -- función para ejecutar consultas sobre BD
