@@ -37,7 +37,7 @@ crearRelacionDeCsv n csvStr =
 
 main = do
     args <- getArgs
-    if length args /= 2
+    if length args < 2
         then error "El primer parámetro debe ser un directorio, el segundo la consulta"
         else do
             -- obtener argumentos, consulta y relaciones

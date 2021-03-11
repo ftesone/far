@@ -7,7 +7,7 @@ import Utils
 type Elemento = String
 type Tupla = [Elemento]
 type Atributo = String
-data RelacionBase = Relacion { atributos :: [Atributo], tuplas :: [Tupla] }
+data RelacionBase = Relacion { atributos :: [(Atributo, Atributo)], tuplas :: [Tupla] }
 
 data Consulta
     = Taux String
@@ -23,7 +23,7 @@ data Consulta
 
 instance Show Consulta where
     show (Taux tb)   = tb
-    show (Tau tb)    = (flistToCsvLine (nombreAtributo) $ atributos tb) ++ "\n" ++ (unlines $ listToCsvLine <$> tuplas tb)
+    show (Tau tb)    = (listToCsvLine $ (snd) <$> atributos tb) ++ "\n" ++ (unlines $ listToCsvLine <$> tuplas tb)
     show (Sigma p q) = "σ [" ++ (show p) ++ "] " ++ (show q)
     show (Pi cs q)   = "π [" ++ (init $ foldr ((++).(++",")) "" cs) ++ "] " ++ (show q)
     show (Rho t q)   = "⍴ [" ++ t ++ "] " ++ (show q)
@@ -55,13 +55,10 @@ instance Read Consulta where
 
 
 
-nombreAtributo :: Atributo -> String
-nombreAtributo c = if elem '.' c then tail $ dropWhile (/='.') c else c
-
 crearConsulta :: String -> Consulta
 crearConsulta s = read s :: Consulta
 
-crearRelacion :: [String] -> [[String]] -> RelacionBase
+crearRelacion :: [(String,String)] -> [[String]] -> RelacionBase
 crearRelacion a t = Relacion a t
 
 
